@@ -16,41 +16,56 @@ from PySide6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QFileDialog
 from . import autostart, ddc
 from .config import ICON_DIR, Config
 
-BG, CARD, BORDER = "#0e1014", "#171a20", "#262a33"
+BG, CARD, BORDER = "#0d0f13", "#161920", "#262a33"
 TEXT, MUTED, ACCENT = "#e7e9ee", "#8a909c", "#6d8dff"
+ACCENT_SOFT, ACCENT_BG, ERR = "#b4c3ff", "#232c4d", "#f87171"
+SURFACE, SURFACE_HI = "#1d2129", "#262b35"
 
 QSS = f"""
-* {{ font-family: 'Segoe UI'; color: {TEXT}; }}
+* {{ font-family: 'Segoe UI Variable Text', 'Segoe UI'; color: {TEXT}; }}
 QMainWindow, QDialog, QWidget#root {{ background: {BG}; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background: transparent; border: none; }}
 QFrame#card {{ background: {CARD}; border: 1px solid {BORDER}; border-radius: 16px; }}
-QLabel#title {{ font-size: 16px; font-weight: 600; }}
-QLabel#sub, QLabel#status {{ color: {MUTED}; font-size: 11px; }}
+QLabel#h1 {{ font-size: 20px; font-weight: 600; }}
+QLabel#title {{ font-size: 15px; font-weight: 600; }}
+QLabel#sub {{ color: {MUTED}; font-size: 11px; }}
+QLabel#status {{ color: {MUTED}; font-size: 12px; }}
+QLabel#status[state="ok"] {{ color: {ACCENT_SOFT}; }}
+QLabel#status[state="error"] {{ color: {ERR}; }}
 QLabel#empty {{ color: {MUTED}; font-size: 13px; }}
-QToolButton#input {{ background: #1e222a; border: 1px solid {BORDER}; border-radius: 12px;
-    padding: 8px 4px; font-size: 11px; }}
-QToolButton#input:hover {{ background: #262b35; border-color: #3a4050; }}
-QToolButton#input[active="true"] {{ background: {ACCENT}; border-color: {ACCENT}; color: white; }}
+QToolButton#input {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 12px;
+    padding: 8px 4px; font-size: 12px; color: {MUTED}; }}
+QToolButton#input:hover {{ background: {SURFACE_HI}; border-color: #3a4050; color: {TEXT}; }}
+QToolButton#input:pressed {{ background: {BORDER}; }}
+QToolButton#input:focus {{ border-color: {ACCENT}; }}
+QToolButton#input[active="true"] {{ background: {ACCENT_BG}; border: 2px solid {ACCENT};
+    color: {TEXT}; font-weight: 600; }}
 QToolButton#input[dim="true"] {{ color: {MUTED}; border-style: dashed; }}
-QToolButton#flat, QPushButton#flat {{ background: transparent; border: none; border-radius: 8px;
-    color: {MUTED}; padding: 4px 8px; font-size: 14px; }}
-QToolButton#flat:hover, QPushButton#flat:hover {{ background: #232731; color: {TEXT}; }}
+QToolButton#flat, QPushButton#flat {{ background: transparent; border: 1px solid transparent;
+    border-radius: 8px; color: {MUTED}; padding: 4px 10px; font-size: 14px; }}
+QToolButton#flat:hover, QPushButton#flat:hover {{ background: {SURFACE}; color: {TEXT}; }}
+QToolButton#flat:focus, QPushButton#flat:focus {{ border-color: {ACCENT}; }}
 QToolButton#flat::menu-indicator {{ image: none; }}
-QPushButton {{ background: #232731; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px 14px; }}
-QPushButton:hover {{ background: #2c313d; }}
-QPushButton:default {{ background: {ACCENT}; border-color: {ACCENT}; color: white; }}
-QLineEdit {{ background: #1e222a; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px 8px;
+QPushButton {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px 14px; }}
+QPushButton:hover {{ background: {SURFACE_HI}; }}
+QPushButton:pressed {{ background: {BORDER}; }}
+QPushButton:focus {{ border-color: {ACCENT}; }}
+QPushButton:default {{ background: {ACCENT}; border-color: {ACCENT}; color: {BG}; font-weight: 600; }}
+QLineEdit {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px 8px;
     selection-background-color: {ACCENT}; }}
 QLineEdit:focus {{ border-color: {ACCENT}; }}
 QCheckBox {{ spacing: 8px; color: {MUTED}; }}
+QCheckBox:hover, QCheckBox:focus {{ color: {TEXT}; }}
 QCheckBox::indicator {{ width: 16px; height: 16px; border-radius: 4px; border: 1px solid #3a4050;
-    background: #1e222a; }}
+    background: {SURFACE}; }}
 QCheckBox::indicator:checked {{ background: {ACCENT}; border-color: {ACCENT}; }}
-QMenu {{ background: #1e222a; border: 1px solid {BORDER}; border-radius: 8px; padding: 4px; }}
+QMenu {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 8px; padding: 4px; }}
 QMenu::item {{ padding: 6px 18px; border-radius: 6px; }}
-QMenu::item:selected {{ background: #2c313d; }}
+QMenu::item:selected {{ background: {SURFACE_HI}; }}
+QToolTip {{ background: {SURFACE}; color: {TEXT}; border: 1px solid {BORDER}; padding: 4px 6px; }}
 QScrollBar:vertical {{ background: transparent; width: 8px; }}
-QScrollBar::handle:vertical {{ background: #2c313d; border-radius: 4px; min-height: 24px; }}
+QScrollBar::handle:vertical {{ background: {SURFACE_HI}; border-radius: 4px; min-height: 24px; }}
+QScrollBar::handle:vertical:hover {{ background: #3a4050; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
 """
 
@@ -98,7 +113,7 @@ def app_icon():
     p.setBrush(QColor(ACCENT))
     p.setPen(Qt.NoPen)
     p.drawRoundedRect(16, 16, 224, 224, 56, 56)
-    p.setBrush(QColor("#0e1014"))
+    p.setBrush(QColor(BG))
     p.drawRoundedRect(52, 62, 152, 98, 14, 14)
     p.setBrush(QColor("white"))
     p.drawRoundedRect(112, 172, 32, 12, 4, 4)
@@ -222,6 +237,7 @@ class InputButton(QToolButton):
     def __init__(self, code):
         super().__init__()
         self.code = code
+        self.icons = None  # (normal, ativo) para icones desenhados; None para icones do usuario
         self.setObjectName("input")
         self.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.setIconSize(QSize(34, 34))
@@ -230,6 +246,8 @@ class InputButton(QToolButton):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
 
     def set_state(self, active, dim):
+        if self.icons:
+            self.setIcon(self.icons[1] if active else self.icons[0])
         self.setProperty("active", active)
         self.setProperty("dim", dim)
         self.style().unpolish(self)
@@ -256,6 +274,7 @@ class MonitorCard(QFrame):
         self.sub.setObjectName("sub")
         self.status = QLabel("Carregando…")
         self.status.setObjectName("status")
+        self.status.setWordWrap(True)
 
         menu_btn = QToolButton()
         menu_btn.setObjectName("flat")
@@ -287,6 +306,12 @@ class MonitorCard(QFrame):
         lay.addWidget(self.status)
         self.update_title()
         self.rebuild()
+
+    def set_status(self, text, state=""):
+        self.status.setText(text)
+        self.status.setProperty("state", state)
+        self.status.style().unpolish(self.status)
+        self.status.style().polish(self.status)
 
     @property
     def mcfg(self):
@@ -321,7 +346,12 @@ class MonitorCard(QFrame):
             btn = InputButton(code)
             btn.setText(entry.get("name") or ddc.input_name(code))
             pm = QPixmap(str(ICON_DIR / entry["icon"])) if entry.get("icon") else QPixmap()
-            btn.setIcon(QIcon(pm) if not pm.isNull() else port_icon(ddc.input_kind(code)))
+            if pm.isNull():
+                kind = ddc.input_kind(code)
+                btn.icons = (port_icon(kind, MUTED), port_icon(kind, ACCENT_SOFT))
+            else:
+                btn.setIcon(QIcon(pm))
+            btn.setToolTip(f"Trocar para {btn.text()}")
             btn.set_state(code == self.current, hidden)
             btn.clicked.connect(lambda _=False, c=code: self.switch(c))
             btn.customContextMenuRequested.connect(lambda pos, b=btn: self._input_menu(b, pos))
@@ -329,7 +359,7 @@ class MonitorCard(QFrame):
             self.buttons.append(btn)
             shown += 1
         if shown == 0:
-            self.status.setText("Todas as entradas estão ocultas (⋯ → Mostrar entradas ocultas)")
+            self.set_status("Todas as entradas estão ocultas. Use ⋯ → Mostrar entradas ocultas.")
 
     def _input_menu(self, btn, pos):
         menu = QMenu(self)
@@ -354,14 +384,15 @@ class MonitorCard(QFrame):
             self.rebuild()
 
     def switch(self, code):
-        self.status.setText("Trocando entrada…")
+        self.set_status("Trocando entrada…")
         self.current = code
         for b in self.buttons:
             b.set_state(b.code == code, bool(self.cfg.input(self.mid, b.code).get("hidden")))
 
         def done(ok, err):
             if err or not ok:
-                self.status.setText("Falhou — ative o DDC/CI no menu do monitor")
+                self.set_status("Não foi possível trocar a entrada. Ative o DDC/CI no menu do monitor.",
+                                "error")
             QTimer.singleShot(2500, self.load_state)
 
         run_async(lambda: ddc.set_input(self.mid, code), done)
@@ -380,7 +411,8 @@ class MonitorCard(QFrame):
 
         def done(res, err):
             if err or res is None:
-                self.status.setText("Monitor indisponível")
+                self.set_status("Monitor indisponível. Verifique o cabo e se o monitor está ligado.",
+                                "error")
                 return
             cur, caps = res
             if caps:
@@ -392,10 +424,10 @@ class MonitorCard(QFrame):
             self.current, self.codes = cur, codes
             self.rebuild()
             if cur is None:
-                self.status.setText("Entrada atual desconhecida (DDC/CI desativado?)")
+                self.set_status("Entrada atual desconhecida. Ative o DDC/CI no menu do monitor.", "error")
             else:
-                self.status.setText("Entrada atual: " + (
-                    self.cfg.input(self.mid, cur).get("name") or ddc.input_name(cur)))
+                self.set_status("Entrada atual: " + (
+                    self.cfg.input(self.mid, cur).get("name") or ddc.input_name(cur)), "ok")
 
         run_async(fetch, done)
 
@@ -434,8 +466,7 @@ class MainWindow(QMainWindow):
 
         head = QHBoxLayout()
         title = QLabel("Monitores")
-        title.setObjectName("title")
-        title.setStyleSheet("font-size: 20px;")
+        title.setObjectName("h1")
         refresh = QPushButton("⟳ Atualizar")
         refresh.setObjectName("flat")
         refresh.setCursor(Qt.PointingHandCursor)
@@ -456,6 +487,7 @@ class MainWindow(QMainWindow):
         holder.setLayout(self.list)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll.setWidget(holder)
         lay.addWidget(self.empty)
         lay.addWidget(scroll, 1)
